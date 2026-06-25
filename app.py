@@ -5,7 +5,20 @@ import requests
 import base64
 import re
 
-st.set_page_config(page_title="2026 거제양정초 잔반 다이어트 AI 프로젝트", page_icon="🍱", layout="centered")
+# 페이지 기본 설정
+st.set_page_config(page_title="거제양정초 잔반 다이어트", page_icon="🍱", layout="centered")
+
+# 모바일 카메라 검은 여백 제거 및 화면 꽉 차게 만드는 CSS 주입
+st.markdown("""
+<style>
+[data-testid="stCameraInput"] video {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+    border-radius: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ⚠️ 새 배포 후 발급받은 새로운 GAS 웹 앱 URL을 넣으세요!
 GAS_URL = "https://script.google.com/macros/s/AKfycbzNozt2C04SOUsYLmZ6gaAzlCVlrR10S3jws5KZWJ4jNzC2yD4QV62-DPR8NoDuF121/exec"
@@ -24,8 +37,9 @@ if api_key and GAS_URL != "":
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
-    st.title("🍱 AI와 함께하는 '잔반 다이어트'")
-    st.write("식판을 촬영해 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.")
+    # 본문 제목에 학교 이름 자연스럽게 추가
+    st.title("🍱 2026 거제양정초 AI 잔반 다이어트")
+    st.write("식판을 촬영하거나 사진을 올려 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.")
 
     st.subheader("👤 학생 정보 입력")
     col1, col2 = st.columns(2)
@@ -34,8 +48,18 @@ if api_key and GAS_URL != "":
     with col2:
         student_name = st.text_input("이름을 입력하세요")
 
-    st.subheader("📸 식판 촬영")
-    img_file = st.camera_input("식판을 똑바로 촬영해 주세요!")
+    st.subheader("📸 식판 사진 등록")
+    
+    # 탭을 나누어 카메라 촬영과 앨범 업로드 둘 다 지원
+    tab1, tab2 = st.tabs(["📷 카메라로 바로 촬영", "📁 앨범에서 사진 선택"])
+    
+    with tab1:
+        camera_file = st.camera_input("식판이 잘 보이도록 똑바로 촬영해 주세요!")
+    with tab2:
+        upload_file = st.file_uploader("휴대폰 앨범이나 컴퓨터의 사진을 업로드하세요", type=['jpg', 'jpeg', 'png'])
+
+    # 카메라로 찍었거나, 파일을 올렸거나 둘 중 하나라도 있으면 진행
+    img_file = camera_file if camera_file else upload_file
 
     if img_file and student_num and student_name:
         if st.session_state.ai_result == "":
@@ -50,7 +74,7 @@ if api_key and GAS_URL != "":
                 3. [환경 영향도]: 이 잔반이 유발하는 탄소 배출량의 수준을 상/중/하로 나누고, 이로 인해 지구가 받는 영향을 설명해 줘.
                 4. [지구의 한마디]: 구체적인 행동 1가지를 다정하게 제안해 줘.
                
-                답변 양식은 아래 서식을 무조건 지켜서 작성해 줘. 마크다운(**)을 붙이지 말고 작성해 줘.:
+                답변 양식은 아래 서식을 무조건 지켜서 작성해 줘:
                 ### 📊 AI 분석 결과
                 - **잔반율**: 내용
                 - **주요 잔반**: 내용
@@ -109,18 +133,16 @@ try:
                 if post_date not in available_dates and post_date != "기록없음":
                     available_dates.append(post_date)
             
-            available_dates.sort(reverse=True) # 최신 날짜순 정렬
-            
-            # 💡 [핵심 추가] 전체 날짜 옵션을 리스트 맨 앞에 추가
+            available_dates.sort(reverse=True)
             available_dates.insert(0, "🌟 전체 누적 (모든 날짜)")
             
             # 2. 사이드바 날짜 선택기
-            st.sidebar.header("📊 2026 잔반 다이어트 현황판")
+            st.sidebar.header("📊 거제양정초 잔반 다이어트 현황판")
             selected_date = st.sidebar.selectbox("📅 날짜를 선택하세요", available_dates)
             
             # 3. 선택한 옵션에 따라 데이터 필터링
             if selected_date == "🌟 전체 누적 (모든 날짜)":
-                filtered_posts = posts # 전체 데이터 사용
+                filtered_posts = posts
                 display_title = "전체 누적"
             else:
                 filtered_posts = [p for p in posts if p.get('date') == selected_date]
@@ -147,16 +169,16 @@ try:
             
             # 6. 현재 보고 있는 화면의 평균 잔반율에 따른 배경색상 동적 변경
             if avg_rate <= 10:
-                bg_color = "rgba(76, 175, 80, 0.15)" # 초록색 (아주 낮음)
+                bg_color = "rgba(76, 175, 80, 0.15)" # 초록색
                 status_msg = "🌍 지구가 아주 행복해해요!"
             elif avg_rate <= 30:
-                bg_color = "rgba(255, 235, 59, 0.15)" # 노란색 (보통)
+                bg_color = "rgba(255, 235, 59, 0.15)" # 노란색
                 status_msg = "👍 아주 잘하고 있어요!"
             elif avg_rate <= 50:
-                bg_color = "rgba(255, 152, 0, 0.15)" # 주황색 (조금 높음)
+                bg_color = "rgba(255, 152, 0, 0.15)" # 주황색
                 status_msg = "🤔 조금만 더 노력해볼까요?"
             else:
-                bg_color = "rgba(244, 67, 54, 0.15)" # 붉은색 (매우 높음)
+                bg_color = "rgba(244, 67, 54, 0.15)" # 붉은색
                 status_msg = "🚨 잔반 다이어트가 시급해요!"
             
             st.sidebar.info(status_msg)
@@ -171,7 +193,7 @@ try:
             </style>
             """, unsafe_allow_html=True)
             
-            # 7. 게시판 메인 화면 (필터링된 글만 역순 출력)
+            # 7. 게시판 메인 화면
             st.header(f"👥 {display_title} 성찰 게시판")
             for post in reversed(filtered_posts):
                 with st.container(border=True):
