@@ -115,7 +115,7 @@ try:
             available_dates.insert(0, "🌟 전체 누적 (모든 날짜)")
             
             # 2. 사이드바 날짜 선택기
-            st.sidebar.header("📊 잔반 다이어트 현황판")
+            st.sidebar.header("📊 2026 거제양정초 잔반 다이어트 현황판")
             selected_date = st.sidebar.selectbox("📅 날짜를 선택하세요", available_dates)
             
             # 3. 선택한 옵션에 따라 데이터 필터링
