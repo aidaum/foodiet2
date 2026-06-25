@@ -24,7 +24,7 @@ if api_key and GAS_URL != "":
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
-    st.title("🍱 거제양정초 AI와 함께하는 '잔반 다이어트'")
+    st.title("🍱 AI와 함께하는 '잔반 다이어트'")
     st.write("식판을 촬영해 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.")
 
     st.subheader("👤 학생 정보 입력")
