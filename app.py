@@ -5,16 +5,25 @@ import requests
 import base64
 import re
 
-# 페이지 기본 설정
-st.set_page_config(page_title="거제양정초 잔반 다이어트", page_icon="🍱", layout="centered")
+st.set_page_config(page_title="잔반 다이어트 AI 프로젝트", page_icon="🍱", layout="centered")
 
-# 모바일 카메라 검은 여백 제거 및 화면 꽉 차게 만드는 CSS 주입
+# --- 🌟 UI 및 모바일 카메라 최적화 CSS 주입 ---
 st.markdown("""
 <style>
+/* 1. 제목이 한 줄로 예쁘게 들어가도록 반응형 크기 조절 */
+.main-title {
+    text-align: center;
+    font-size: clamp(1.2rem, 3.5vw, 1.8rem); /* 화면 크기에 따라 글씨가 자동으로 커지고 작아짐 */
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    word-break: keep-all; /* 단어 단위로 끊어지도록 설정 */
+}
+
+/* 2. 모바일 환경에서 카메라 화면 검은 여백 없애고 꽉 차게 만들기 */
 [data-testid="stCameraInput"] video {
     width: 100% !important;
     height: auto !important;
-    object-fit: cover !important;
+    object-fit: cover !important; /* 비율을 유지하면서 여백 없이 화면을 꽉 채움 */
     border-radius: 10px;
 }
 </style>
@@ -37,9 +46,9 @@ if api_key and GAS_URL != "":
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
-    # 본문 제목에 학교 이름 자연스럽게 추가
-    st.title("🍱 2026 거제양정초 AI 잔반 다이어트")
-    st.write("식판을 촬영하거나 사진을 올려 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.")
+    # 🌟 1번 보완: 한 줄로 들어가는 깔끔한 디자인의 제목
+    st.markdown("<div class='main-title'>🍱 2026 거제양정초 AI와 함께하는 잔반 다이어트</div>", unsafe_allow_html=True)
+    st.write("<div style='text-align: center; color: gray; margin-bottom: 2rem;'>식판을 촬영해 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.</div>", unsafe_allow_html=True)
 
     st.subheader("👤 학생 정보 입력")
     col1, col2 = st.columns(2)
@@ -48,18 +57,17 @@ if api_key and GAS_URL != "":
     with col2:
         student_name = st.text_input("이름을 입력하세요")
 
-    st.subheader("📸 식판 사진 등록")
-    
-    # 탭을 나누어 카메라 촬영과 앨범 업로드 둘 다 지원
-    tab1, tab2 = st.tabs(["📷 카메라로 바로 촬영", "📁 앨범에서 사진 선택"])
-    
-    with tab1:
-        camera_file = st.camera_input("식판이 잘 보이도록 똑바로 촬영해 주세요!")
-    with tab2:
-        upload_file = st.file_uploader("휴대폰 앨범이나 컴퓨터의 사진을 업로드하세요", type=['jpg', 'jpeg', 'png'])
+    st.divider()
 
-    # 카메라로 찍었거나, 파일을 올렸거나 둘 중 하나라도 있으면 진행
-    img_file = camera_file if camera_file else upload_file
+    # 🌟 2번 & 3번 보완: 사진 촬영 및 파일 업로드 선택 기능 추가
+    st.subheader("📸 식판 사진 등록")
+    input_method = st.radio("사진 등록 방식을 선택하세요.", ["카메라로 즉시 촬영", "갤러리/컴퓨터에서 파일 업로드"], horizontal=True)
+
+    img_file = None
+    if input_method == "카메라로 즉시 촬영":
+        img_file = st.camera_input("식판을 밝은 곳에서 똑바로 촬영해 주세요!")
+    else:
+        img_file = st.file_uploader("기기에 저장된 식판 사진을 선택해 주세요.", type=['png', 'jpg', 'jpeg'])
 
     if img_file and student_num and student_name:
         if st.session_state.ai_result == "":
@@ -137,18 +145,18 @@ try:
             available_dates.insert(0, "🌟 전체 누적 (모든 날짜)")
             
             # 2. 사이드바 날짜 선택기
-            st.sidebar.header("📊 거제양정초 잔반 다이어트 현황판")
+            st.sidebar.header("📊 잔반 다이어트 현황판")
             selected_date = st.sidebar.selectbox("📅 날짜를 선택하세요", available_dates)
             
             # 3. 선택한 옵션에 따라 데이터 필터링
             if selected_date == "🌟 전체 누적 (모든 날짜)":
-                filtered_posts = posts
+                filtered_posts = posts 
                 display_title = "전체 누적"
             else:
                 filtered_posts = [p for p in posts if p.get('date') == selected_date]
                 display_title = selected_date
             
-            # 4. 잔반율 평균 계산 로직 (필터링된 데이터 기준)
+            # 4. 잔반율 평균 계산
             total_rate = 0
             count = 0
             for p in filtered_posts:
@@ -160,30 +168,29 @@ try:
             
             avg_rate = total_rate // count if count > 0 else 0
             
-            # 5. 사이드바에 커다란 시계(위젯) 형태로 평균 출력
+            # 5. 사이드바 평균 출력
             st.sidebar.markdown(f"### 🎯 {display_title} 평균")
             st.sidebar.markdown(
                 f"<div style='text-align: center; font-size: 80px; font-weight: bold; color: #444; background-color: white; border-radius: 15px; margin-bottom: 20px;'>{avg_rate}%</div>", 
                 unsafe_allow_html=True
             )
             
-            # 6. 현재 보고 있는 화면의 평균 잔반율에 따른 배경색상 동적 변경
+            # 6. 배경색상 동적 변경
             if avg_rate <= 10:
-                bg_color = "rgba(76, 175, 80, 0.15)" # 초록색
+                bg_color = "rgba(76, 175, 80, 0.15)" # 초록
                 status_msg = "🌍 지구가 아주 행복해해요!"
             elif avg_rate <= 30:
-                bg_color = "rgba(255, 235, 59, 0.15)" # 노란색
+                bg_color = "rgba(255, 235, 59, 0.15)" # 노란
                 status_msg = "👍 아주 잘하고 있어요!"
             elif avg_rate <= 50:
-                bg_color = "rgba(255, 152, 0, 0.15)" # 주황색
+                bg_color = "rgba(255, 152, 0, 0.15)" # 주황
                 status_msg = "🤔 조금만 더 노력해볼까요?"
             else:
-                bg_color = "rgba(244, 67, 54, 0.15)" # 붉은색
+                bg_color = "rgba(244, 67, 54, 0.15)" # 빨강
                 status_msg = "🚨 잔반 다이어트가 시급해요!"
             
             st.sidebar.info(status_msg)
             
-            # HTML/CSS를 화면 전체에 강제 주입하여 배경색 변경
             st.markdown(f"""
             <style>
             .stApp {{
