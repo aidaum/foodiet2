@@ -5,7 +5,7 @@ import requests
 import base64
 import re
 
-st.set_page_config(page_title="잔반 다이어트 AI 프로젝트", page_icon="🍱", layout="centered")
+st.set_page_config(page_title="2026 거제양정초 잔반 다이어트 AI 프로젝트", page_icon="🍱", layout="centered")
 
 # ⚠️ 새 배포 후 발급받은 새로운 GAS 웹 앱 URL을 넣으세요!
 GAS_URL = "https://script.google.com/macros/s/AKfycbzNozt2C04SOUsYLmZ6gaAzlCVlrR10S3jws5KZWJ4jNzC2yD4QV62-DPR8NoDuF121/exec"
@@ -24,7 +24,7 @@ if api_key and GAS_URL != "":
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
-    st.title("🍱 AI와 함께하는 '잔반 다이어트'")
+    st.title("🍱 거제양정초 AI와 함께하는 '잔반 다이어트'")
     st.write("식판을 촬영해 AI 분석을 받고, 오늘 나의 성찰일지를 친구들과 공유해 보세요.")
 
     st.subheader("👤 학생 정보 입력")
@@ -115,7 +115,7 @@ try:
             available_dates.insert(0, "🌟 전체 누적 (모든 날짜)")
             
             # 2. 사이드바 날짜 선택기
-            st.sidebar.header("📊 2026 거제양정초 잔반 다이어트 현황판")
+            st.sidebar.header("📊 2026 잔반 다이어트 현황판")
             selected_date = st.sidebar.selectbox("📅 날짜를 선택하세요", available_dates)
             
             # 3. 선택한 옵션에 따라 데이터 필터링
