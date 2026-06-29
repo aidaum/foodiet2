@@ -30,7 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ⚠️ 새 배포 후 발급받은 새로운 GAS 웹 앱 URL을 넣으세요!
-GAS_URL = "https://script.google.com/macros/s/AKfycbzNozt2C04SOUsYLmZ6gaAzlCVlrR10S3jws5KZWJ4jNzC2yD4QV62-DPR8NoDuF121/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbyzA4V7JpsJh1qWT0BV43vqsFb-J3JnjpTt86-QV4cXDKrQZIofVZOBL_Cz61324LVj/exec"
 
 # 스트림릿 비밀 금고에서 API 키 불러오기
 try:
