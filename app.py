@@ -30,7 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ⚠️ 새 배포 후 발급받은 새로운 GAS 웹 앱 URL을 넣으세요!
-GAS_URL = "https://script.google.com/macros/s/AKfycbyzA4V7JpsJh1qWT0BV43vqsFb-J3JnjpTt86-QV4cXDKrQZIofVZOBL_Cz61324LVj/exec"
+GAS_URL = "https://script.google.com/macros/s/AKfycbwI4w6AFOB1KqlIl_rlXXEq4rvQ07djB56OGyQfLh9LxMbIaRHMQWD9tM7W4wR3OlpW/exec"
 
 # 스트림릿 비밀 금고에서 API 키 불러오기
 try:
@@ -114,13 +114,30 @@ if api_key and GAS_URL != "":
                         "reflection": reflection_text,
                         "image_base64": data_uri
                     }
-                    res = requests.post(GAS_URL, json=payload)
-                    if res.status_code == 200:
-                        st.success("🎉 성공적으로 등록되었습니다!")
-                        st.session_state.ai_result = ""
-                        st.rerun()
-                    else:
-                        st.error("등록에 실패했습니다.")
+                    
+                    try:
+                        # 구글 서버로 전송
+                        res = requests.post(GAS_URL, json=payload)
+                        
+                        if res.status_code == 200:
+                            result = res.json()
+                            # 구글 서버에서 status가 success로 왔을 때만 진짜 성공 처리
+                            if isinstance(result, dict) and result.get("status") == "success":
+                                st.success("🎉 성공적으로 등록되었습니다!")
+                                st.session_state.ai_result = ""
+                                
+                                import time
+                                time.sleep(1.5) # 사용자가 성공 메시지를 읽을 수 있도록 1.5초 대기
+                                st.rerun()      # 화면 새로고침
+                            else:
+                                # 구글 서버에서 에러가 발생한 경우 화면에 빨간색으로 출력
+                                st.error(f"❌ 구글 서버 에러: {result.get('message', '알 수 없는 오류')}")
+                        else:
+                            st.error(f"❌ 통신 에러 (상태 코드: {res.status_code})")
+                    except Exception as e:
+                        st.error(f"❌ 전송 중 오류가 발생했습니다: {e}")
+            else:
+                st.warning("성찰일지 내용을 입력해야 등록할 수 있습니다.")
 
 # --- 🌟 사이드바 및 동적 배경색 정렬 로직 ---
 st.divider()
